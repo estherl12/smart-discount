@@ -43,6 +43,23 @@ export class UserService {
     return `This action returns a #${id} user`;
   }
 
+  async findOneByEmail(email: string) {
+    const userInfo = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    return userInfo;
+  }
+
+  async findOneById(id: string) {
+    const userInfo = await this.userRepository.findOne({
+      where: { id },
+    });
+
+    return userInfo;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }

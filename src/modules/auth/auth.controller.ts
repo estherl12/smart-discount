@@ -6,11 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Request,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { PublicRoute } from 'src/common/decorators/public-route.decorator';
 import { CreateUserDto } from '../user/dto/create-user.dto';
+import { LocalAuthGuard } from 'src/guards/local-auth.guard';
+// import { Request } from 'express'; // Remove this line
 
 @Controller('auth')
 export class AuthController {
@@ -20,6 +25,14 @@ export class AuthController {
   @Post('/signup')
   create(@Body() createAuthDto: CreateUserDto) {
     return this.authService.register(createAuthDto);
+  }
+
+  @PublicRoute()
+  @Post('/login')
+  @UseGuards(LocalAuthGuard)
+  login(@Req() req: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return this.authService.login(req.user);
   }
 
   @Get()
