@@ -1,14 +1,21 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  BaseEntity as Entity,
+  CreateDateColumn,
+  DeleteDateColumn,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Entity('categories')
-export class Category {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export abstract class BaseEntity extends Entity {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column({
-    type: 'varchar',
-    length: 255,
-    unique: true,
-  })
-  name: string;
+  @CreateDateColumn({ type: 'timestamp' })
+  created_at: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updated_at: Date;
+
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  deleted_at: Date;
 }
