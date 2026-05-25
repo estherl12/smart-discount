@@ -1,26 +1,85 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Category } from './entities/category.entity';
+import { Repository } from 'typeorm';
+import { IAuthUser } from 'src/types/express';
 
 @Injectable()
 export class CategoryService {
-  create(createCategoryDto: CreateCategoryDto) {
-    return 'This action adds a new category';
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepo: Repository<Category>,
+  ) {}
+  async create(createCategoryDto: CreateCategoryDto, user: IAuthUser) {
+    const category = this.categoryRepo.create({
+      name: createCategoryDto.name,
+      shop: { id: user.shopId },
+    });
+
+    await this.categoryRepo.save(category);
+    return category;
   }
 
-  findAll() {
-    return `This action returns all category`;
+  async findAllOfAShop(user: IAuthUser, searchQuery?: string) {
+    let categories;
+    const shopId = user.shopId;
+    if (searchQuery) {
+      categories = await this.categoryRepo
+        .createQueryBuilder('category')
+        .innerJoin('category.shop', 'shop')
+        .where('shop.id = :shopId', {
+          shopId,
+        })
+        .andWhere('category.name ILIKE :search', {
+          search: `%${searchQuery}%`,
+        })
+        .getMany();
+    } else {
+      categories = await this.categoryRepo.find({
+        where: {
+          shop: { id: shopId },
+        },
+      });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return categories;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  async findOne(id: string, shopId?: string) {
+    return await this.categoryRepo.findOne({
+      where: {
+        id,
+        ...(shopId ? { shop: { id: shopId } } : {}),
+      },
+    });
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+    user: IAuthUser,
+  ) {
+    const isCategoryExist = await this.categoryRepo.findOne({
+      where: { id: id, shop: { id: user.shopId } },
+    });
+
+    if (!isCategoryExist)
+      throw new BadRequestException('Category not found to update!');
+
+    return await this.categoryRepo.update(id, { ...updateCategoryDto });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+  async remove(id: string, user: IAuthUser) {
+    const isCategoryExist = await this.categoryRepo.findOne({
+      where: { id: id, shop: { id: user.shopId } },
+    });
+
+    if (!isCategoryExist)
+      throw new BadRequestException('Category not found to update!');
+
+    return await this.categoryRepo.delete(id);
   }
 }

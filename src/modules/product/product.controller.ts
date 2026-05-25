@@ -6,37 +6,59 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Req,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import type { Request } from 'express';
+import type { IAuthUser } from 'src/types/express';
 
-@Controller('product')
+@Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  @Post('/new')
+  @UseGuards(JwtAuthGuard)
+  create(@Body() createProductDto: CreateProductDto, @Req() req: Request) {
+    return this.productService.create(createProductDto, req.user as IAuthUser);
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  @UseGuards(JwtAuthGuard)
+  findAll(@Query('searchQuery') searchQuery: string, @Req() req: Request) {
+    return this.productService.findAllOfAShop(
+      req.user as IAuthUser,
+      searchQuery,
+    );
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    return this.productService.findOne(id, req.user as IAuthUser);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @Req() req: Request,
+  ) {
+    return this.productService.update(
+      id,
+      updateProductDto,
+      req.user as IAuthUser,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  remove(@Param('id') id: string, @Req() req: Request) {
+    return this.productService.remove(id, req.user as IAuthUser);
   }
 }

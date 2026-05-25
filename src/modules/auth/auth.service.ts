@@ -38,6 +38,7 @@ export class AuthService {
       id: user.id,
       role: user.role,
       email: user.email,
+      shopId: user.shop.id,
     };
   }
 
@@ -46,6 +47,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      shopId: user.shopId,
     };
 
     return {

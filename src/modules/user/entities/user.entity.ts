@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Shop } from 'src/modules/shop/entities/shop.entity';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 import { USER_ROLE } from '../enums/user-role.enum';
 
@@ -46,6 +47,8 @@ export class User {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
+  @OneToOne(() => Shop, (shop) => shop.owner)
+  shop: Shop;
   // @Column({ default: false })
   // isApproved: boolean;
 

@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import argon2 from 'argon2';
 import { USER_ROLE } from './enums/user-role.enum';
+import { Shop } from '../shop/entities/shop.entity';
 
 @Injectable()
 export class UserService {
@@ -13,7 +14,7 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
   async create(createUserDto: CreateUserDto) {
-    const { email, password } = createUserDto;
+    const { email, password, shopName } = createUserDto;
     const isEmailUsed = await this.userRepository.findOne({
       where: { email },
     });
@@ -23,16 +24,31 @@ export class UserService {
     }
     const hashedPassword = await argon2.hash(password);
 
-    const user = this.userRepository.create({
-      email,
-      password: hashedPassword,
-      fullName: createUserDto.fullName,
-      contactNumber: createUserDto.contactNumber,
-      role: USER_ROLE.ADMIN,
-    });
+    const createdUser = await this.userRepository.manager.transaction(
+      async (manager) => {
+        const user = manager.create(User, {
+          email,
+          password: hashedPassword,
+          fullName: createUserDto.fullName,
+          contactNumber: createUserDto.contactNumber,
+          role: USER_ROLE.ADMIN,
+        });
 
-    await this.userRepository.save(user);
-    return user;
+        await manager.save(user);
+
+        const shop = manager.create(Shop, {
+          name: shopName,
+          owner: user,
+        });
+
+        await manager.save(shop);
+
+        user.shop = shop;
+        return user;
+      },
+    );
+
+    return createdUser;
   }
 
   findAll() {
@@ -46,6 +62,7 @@ export class UserService {
   async findOneByEmail(email: string) {
     const userInfo = await this.userRepository.findOne({
       where: { email },
+      relations: { shop: true },
     });
 
     return userInfo;
@@ -54,6 +71,7 @@ export class UserService {
   async findOneById(id: string) {
     const userInfo = await this.userRepository.findOne({
       where: { id },
+      relations: { shop: true },
     });
 
     return userInfo;

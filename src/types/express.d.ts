@@ -1,22 +1,16 @@
-// TODO:: Change this with actual user data later on
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { User, UserType } from '../modules/user/entities/user.entity';
+import type { USER_ROLE } from 'src/modules/user/enums/user-role.enum';
 
-interface IAuthRole {
-  id: number;
-  value: string;
-  type: string;
-  label: string;
-}
-
-interface IAuthUser {
+export interface IAuthUser {
   id: string;
   email: string;
-  role: UserType;
+  role: USER_ROLE;
+  shopId: string;
 }
 
-declare namespace Express {
-  export interface Request {
-    user?: IAuthUser;
+declare global {
+  namespace Express {
+    interface Request {
+      user?: IAuthUser;
+    }
   }
 }

@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
@@ -48,6 +46,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: user.email,
       // username: user.username,
       role: user.role,
+      shopId: user.shop.id,
     };
   }
 }
