@@ -8,6 +8,8 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 import { verify } from 'argon2';
 import { IAuthUser } from 'src/types/express';
 import { JwtService } from '@nestjs/jwt';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { EditProfileDto } from './dto/edit-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +30,14 @@ export class AuthService {
       throw new BadRequestException('User is not yet registered!');
     }
 
+    if (!user.password) {
+      throw new BadRequestException('Password is not set for this user yet');
+    }
+
+    if (user.isSuspended) {
+      throw new BadRequestException('User is suspended');
+    }
+
     const isPasswordMatched = await verify(user.password, pass);
     if (!isPasswordMatched) {
       throw new BadRequestException('Invalid email or password!');
@@ -42,7 +52,9 @@ export class AuthService {
     };
   }
 
-  login(user: any) {
+  async login(user: IAuthUser) {
+    await this.userService.updateLastLoginTime(user.id);
+
     const payload = {
       sub: user.id,
       email: user.email,
@@ -53,6 +65,47 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign(payload),
     };
+  }
+
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = await this.userService.findOneById(userId);
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (!user.password) {
+      throw new BadRequestException('Password is not set for this user yet');
+    }
+
+    const { currentPassword, newPassword } = changePasswordDto;
+    const isCurrentPasswordMatched = await verify(
+      user.password,
+      currentPassword,
+    );
+
+    if (!isCurrentPasswordMatched) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    if (currentPassword === newPassword) {
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
+    }
+
+    await this.userService.changePassword(user.id, newPassword);
+
+    return {
+      message: 'Password changed successfully',
+    };
+  }
+
+  async updateProfile(userId: string, editProfileDto: EditProfileDto) {
+    return this.userService.updateProfile(userId, editProfileDto);
   }
 
   findAll() {

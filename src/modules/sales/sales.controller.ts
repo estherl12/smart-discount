@@ -30,10 +30,7 @@ export class SalesController {
   @Get()
   @UseGuards(JwtAuthGuard)
   findAll(@Query('searchQuery') searchQuery: string, @Req() req: Request) {
-    return this.salesService.findAllOfAShop(
-      req.user as IAuthUser,
-      searchQuery,
-    );
+    return this.salesService.findAllOfAShop(req.user as IAuthUser, searchQuery);
   }
 
   @Get(':id')

@@ -23,12 +23,15 @@ export class Shop extends BaseEntity {
   })
   name: string;
 
-  @OneToOne(() => User, (user) => user.shop, {
+  @OneToOne(() => User, (user) => user.ownedShop, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'ownerId' })
   owner: User;
+
+  @OneToMany(() => User, (user) => user.shop)
+  users: User[];
 
   @OneToMany(() => Category, (category) => category.shop)
   categories: Category[];

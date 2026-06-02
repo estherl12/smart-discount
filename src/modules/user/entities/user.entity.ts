@@ -1,5 +1,12 @@
 import { Shop } from 'src/modules/shop/entities/shop.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 import { USER_ROLE } from '../enums/user-role.enum';
 
@@ -19,13 +26,11 @@ export class User {
   @IsEmail({}, { message: 'Invalid email format' })
   email: string;
 
-  @Column()
-  @IsNotEmpty({ message: 'Password is required' })
-  password: string;
+  @Column({ type: 'character varying', nullable: true })
+  password: string | null;
 
-  @Column({ unique: true })
-  @Length(10, 10, { message: 'Contact number should be 10-digits' })
-  contactNumber: string;
+  @Column({ type: 'character varying', unique: true, nullable: true })
+  contactNumber: string | null;
 
   @Column({
     type: 'enum',
@@ -47,7 +52,24 @@ export class User {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
+  @Column({ default: true })
+  isActive: boolean;
+
+  @Column({ default: false })
+  isSuspended: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  lastLoginTime: Date | null;
+
   @OneToOne(() => Shop, (shop) => shop.owner)
+  ownedShop: Shop;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  @ManyToOne(() => Shop, (shop) => shop.users, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'shopId' })
   shop: Shop;
   // @Column({ default: false })
   // isApproved: boolean;
