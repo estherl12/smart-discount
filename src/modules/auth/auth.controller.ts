@@ -37,6 +37,12 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getProfile(@Req() req: Request) {
+    return this.authService.getProfile(req.user!.id);
+  }
+
   @Get()
   findAll() {
     return this.authService.findAll();

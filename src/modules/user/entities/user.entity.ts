@@ -64,7 +64,6 @@ export class User {
   @OneToOne(() => Shop, (shop) => shop.owner)
   ownedShop: Shop;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   @ManyToOne(() => Shop, (shop) => shop.users, {
     nullable: true,
     onDelete: 'SET NULL',

@@ -118,6 +118,7 @@ export class UserService {
 
     return {
       users: users.map((user) => ({
+        id: user.id,
         fullName: user.fullName,
         email: user.email,
         role: user.role,
@@ -135,10 +136,6 @@ export class UserService {
 
   findAll() {
     return `This action returns all user`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
   }
 
   async findOneByEmail(email: string) {
@@ -270,13 +267,55 @@ export class UserService {
     return updatedUser;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(authUser: IAuthUser, id: string, updateUserDto: UpdateUserDto) {
+    if (authUser.role !== USER_ROLE.ADMIN) {
+      throw new ForbiddenException('Only admins can update users');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id, shop: { id: authUser.shopId } },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (updateUserDto.role) {
+      user.role = updateUserDto.role;
+    }
+
+    if (updateUserDto.fullName) {
+      user.fullName = updateUserDto.fullName;
+    }
+
+    if (updateUserDto.email) {
+      const emailOwner = await this.userRepository.findOne({
+        where: { email: updateUserDto.email },
+      });
+      if (emailOwner && emailOwner.id !== id) {
+        throw new ConflictException('Email is already used');
+      }
+      user.email = updateUserDto.email;
+    }
+
+    user.updatedAt = new Date();
+    return this.userRepository.save(user);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(authUser: IAuthUser, id: string): Promise<void> {
+    if (authUser.role !== USER_ROLE.ADMIN) {
+      throw new ForbiddenException('Only admins can delete users');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id, shop: { id: authUser.shopId } },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.userRepository.remove(user);
   }
 
   private getUserStatus(user: User): USER_STATUS {

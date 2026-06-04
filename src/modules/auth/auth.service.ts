@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
 import { UpdateAuthDto } from './dto/update-auth.dto';
@@ -106,6 +104,10 @@ export class AuthService {
 
   async updateProfile(userId: string, editProfileDto: EditProfileDto) {
     return this.userService.updateProfile(userId, editProfileDto);
+  }
+
+  async getProfile(userId: string) {
+    return this.userService.findOneById(userId);
   }
 
   findAll() {

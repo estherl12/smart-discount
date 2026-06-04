@@ -27,9 +27,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     //   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     //   throw new UnauthorizedException(this.i18n.t('error.UNAUTHORIZE'));
 
-    if (!user)
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      throw new UnauthorizedException('Unauthenticated or invalid');
+    if (!user) throw new UnauthorizedException('Unauthenticated or invalid');
 
     return user;
   }
