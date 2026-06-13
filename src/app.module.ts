@@ -11,6 +11,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ProductModule } from './modules/product/product.module';
 import { CategoryModule } from './modules/category/category.module';
 import { SalesModule } from './modules/sales/sales.module';
+import { MlModule } from './modules/ml/ml.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { SalesModule } from './modules/sales/sales.module';
     ProductModule,
     CategoryModule,
     SalesModule,
+    MlModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
   UseGuards,
   Req,
 } from '@nestjs/common';
@@ -31,7 +32,7 @@ export class CategoryController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll(@Param('searchQuery') searchQuery: string, @Req() req: Request) {
+  findAll(@Query('searchQuery') searchQuery: string, @Req() req: Request) {
     return this.categoryService.findAllOfAShop(
       req.user as IAuthUser,
       searchQuery,
